@@ -1,0 +1,229 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure for Student Node
+typedef struct Student {
+    int id;
+    char name[50];
+    float gpa;
+    struct Student *next;
+} Student;
+
+// Structure for Course
+typedef struct Course {
+    char courseName[50];
+    Student *head;
+} Course;
+
+// Function to create a new student node
+Student* createStudent(int id, char name[], float gpa) {
+    Student newStudent = (Student)malloc(sizeof(Student));
+    newStudent->id = id;
+    strcpy(newStudent->name, name);
+    newStudent->gpa = gpa;
+    newStudent->next = NULL;
+    return newStudent;
+}
+
+// Add a student to a course (at end)
+void addStudent(Course *course, int id, char name[], float gpa) {
+    Student *newStudent = createStudent(id, name, gpa);
+
+    if (course->head == NULL) {
+        course->head = newStudent;
+        printf("Student added successfully!\n");
+        return;
+    }
+
+    Student *temp = course->head;
+    while (temp->next != NULL)
+        temp = temp->next;
+
+    temp->next = newStudent;
+    printf("Student added successfully!\n");
+}
+
+// Drop a student by ID
+void dropStudent(Course *course, int id) {
+    if (course->head == NULL) {
+        printf("No students enrolled.\n");
+        return;
+    }
+
+    Student *temp = course->head, *prev = NULL;
+
+    if (temp != NULL && temp->id == id) {
+        course->head = temp->next;
+        free(temp);
+        printf("Student dropped successfully!\n");
+        return;
+    }
+
+    while (temp != NULL && temp->id != id) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Student not found.\n");
+        return;
+    }
+
+    prev->next = temp->next;
+    free(temp);
+    printf("Student dropped successfully!\n");
+}
+
+// Display students in a course
+void displayStudents(Course *course) {
+    if (course->head == NULL) {
+        printf("No students enrolled in %s.\n", course->courseName);
+        return;
+    }
+
+    printf("Students enrolled in %s:\n", course->courseName);
+    Student *temp = course->head;
+    while (temp != NULL) {
+        printf("ID: %d | Name: %s | GPA: %.2f\n", temp->id, temp->name, temp->gpa);
+        temp = temp->next;
+    }
+}
+
+// Reverse student list
+void reverseList(Course *course) {
+    Student *prev = NULL, *current = course->head, *next = NULL;
+    while (current != NULL) {
+        next = current->next;
+        current->next = prev;
+        prev = current;
+        current = next;
+    }
+    course->head = prev;
+    printf("Student list reversed successfully!\n");
+}
+
+// Clone student list
+Student* cloneList(Student *head) {
+    if (head == NULL)
+        return NULL;
+
+    Student *newHead = createStudent(head->id, head->name, head->gpa);
+    Student *tempNew = newHead;
+    Student *tempOld = head->next;
+
+    while (tempOld != NULL) {
+        tempNew->next = createStudent(tempOld->id, tempOld->name, tempOld->gpa);
+        tempNew = tempNew->next;
+        tempOld = tempOld->next;
+    }
+
+    return newHead;
+}
+
+// Count total students
+int countStudents(Course *course) {
+    int count = 0;
+    Student *temp = course->head;
+    while (temp != NULL) {
+        count++;
+        temp = temp->next;
+    }
+    return count;
+}
+
+// Calculate average GPA
+float calculateAverageGPA(Course *course) {
+    if (course->head == NULL) {
+        printf("No students to calculate GPA.\n");
+        return 0.0;
+    }
+
+    float totalGPA = 0;
+    int count = 0;
+    Student *temp = course->head;
+    while (temp != NULL) {
+        totalGPA += temp->gpa;
+        count++;
+        temp = temp->next;
+    }
+
+    return totalGPA / count;
+}
+
+// Main Menu
+int main() {
+    Course course;
+    strcpy(course.courseName, "Computer Science");
+    course.head = NULL;
+
+    Course backup;
+    strcpy(backup.courseName, "Backup");
+    backup.head = NULL;
+
+    int choice, id;
+    char name[50];
+    float gpa;
+
+    while (1) {
+        printf("\n--- Course Enrollment Management ---\n");
+        printf("1. Add Student\n");
+        printf("2. Drop Student\n");
+        printf("3. Display Students\n");
+        printf("4. Reverse Student List\n");
+        printf("5. Clone Course Enrollment\n");
+        printf("6. Count Total Students\n");
+        printf("7. Calculate Average GPA\n");
+        printf("8. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter ID: ");
+                scanf("%d", &id);
+                printf("Enter Name: ");
+                scanf("%s", name);
+                printf("Enter GPA: ");
+                scanf("%f", &gpa);
+                addStudent(&course, id, name, gpa);
+                break;
+
+            case 2:
+                printf("Enter Student ID to drop: ");
+                scanf("%d", &id);
+                dropStudent(&course, id);
+                break;
+
+            case 3:
+                displayStudents(&course);
+                break;
+
+            case 4:
+                reverseList(&course);
+                break;
+
+            case 5:
+                backup.head = cloneList(course.head);
+                printf("Course enrollment cloned successfully!\n");
+                break;
+
+            case 6:
+                printf("Total students enrolled: %d\n", countStudents(&course));
+                break;
+
+            case 7:
+                printf("Average GPA of students: %.2f\n", calculateAverageGPA(&course));
+                break;
+
+            case 8:
+                printf("Exiting program...\n");
+                exit(0);
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    }
+
+    return 0;
+}
